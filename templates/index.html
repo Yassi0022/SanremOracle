@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎤 Sanremo 2026 Predictor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #fff;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #f5c518;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+
+        .btn-refresh {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 10px 24px;
+            background: #f5c518;
+            color: #1a1a2e;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-refresh:hover {
+            opacity: 0.85;
+        }
+
+        #msg {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #7fff7f;
+            min-height: 20px;
+        }
+
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.15s;
+        }
+
+        .card:hover {
+            transform: translateX(4px);
+        }
+
+        .rank {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f5c518;
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .rank.top1 {
+            font-size: 2rem;
+        }
+
+        .rank.top2 {
+            font-size: 1.8rem;
+        }
+
+        .rank.top3 {
+            font-size: 1.6rem;
+            color: #cd7f32;
+        }
+
+        .info {
+            flex: 1;
+        }
+
+        .artista {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .canzone {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        .prob-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            min-width: 120px;
+        }
+
+        .prob-label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #f5c518;
+        }
+
+        .bar-bg {
+            width: 100px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f5c518, #e91e63);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #555;
+            font-size: 0.8rem;
+        }
+
+        .medal-1::before {
+            content: "🥇 ";
+        }
+
+        .medal-2::before {
+            content: "🥈 ";
+        }
+
+        .medal-3::before {
+            content: "🥉 ";
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🎤 Sanremo 2026 Predictor</h1>
+        <p>Modello AI • RandomForest • Dati live Spotify</p>
+        <button class="btn-refresh" onclick="aggiornaDati()">🔄 Aggiorna Spotify Live</button>
+        <div id="msg"></div>
+    </header>
+
+    <div class="card-container">
+        {% for row in top15 %}
+        <div class="card">
+
+            <div
+                class="rank {% if loop.index == 1 %}top1 medal-1{% elif loop.index == 2 %}top2 medal-2{% elif loop.index == 3 %}top3 medal-3{% endif %}">
+                {% if loop.index > 3 %}{{ loop.index }}{% endif %}
+            </div>
+
+            <div class="info">
+                <div class="artista">{{ row.Artista }}</div>
+                <div class="canzone">🎵 {{ row.Canzone }}</div>
+            </div>
+
+            <div class="prob-container">
+                <div class="prob-label">{{ row.Prob_Vittoria }}%</div>
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: {{ [row.Prob_Vittoria * 5, 100] | min }}%;"></div>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <p>Sanremo Predictor v2 — aggiornato in real-time 🚀</p>
+    </footer>
+
+    <script>
+        function aggiornaDati() {
+            const msg = document.getElementById('msg');
+            msg.textContent = '⏳ Aggiornamento Spotify in corso...';
+
+            fetch('/live_spotify')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        msg.textContent = `✅ Aggiornato! Top 1: ${data.top1} (${data.top1_prob}%) — ricarico...`;
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        msg.textContent = `❌ Errore: ${data.message}`;
+                    }
+                })
+                .catch(() => {
+                    msg.textContent = '❌ Errore di rete.';
+                });
+        }
+    </script>
+
+</body>
+
+</html>

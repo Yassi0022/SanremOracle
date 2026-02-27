@@ -1,0 +1,22 @@
+# Chiavi e variabili d'ambiente 
+.env
+.env.*
+
+# File generati e compilati da Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# model.pkl
+# scaler.pkl
+
+# Ambienti virtuali
+venv/
+env/
+ENV/
+.venv/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
